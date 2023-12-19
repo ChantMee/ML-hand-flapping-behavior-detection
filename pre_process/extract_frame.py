@@ -37,7 +37,7 @@ def extract_frame(video_id, video_path, start_time, end_time, save_path):
         frame_list.append(f"{video_id}_{current_frame}.jpg")
 
     cap.release()
-    return frame_list
+    return frame_list, fps
 
 
 def read_duration_annotation(video_duration_annotation_path):
@@ -61,6 +61,8 @@ def read_annotation(annotation_path):
     :param annotation_path: path to annotation file
     :return: dict of annotation
     """
+    if not os.path.exists(annotation_path):
+        return []
     with open(annotation_path, 'r') as f:
         annotation = json.load(f)
         f.close()
@@ -86,13 +88,21 @@ if __name__ == "__main__":
     save_folder_name = r'frames'
 
     rda = read_duration_annotation(os.path.join(dataset_path, video_duration_annotation_name))
-    annotation = {0: [], 1: []}
+    annotation = read_annotation(os.path.join(dataset_path, video_annotation_name))
     for i in tqdm(range(len(rda))):
         video_id = rda[i][0]
         start_time, end_time = rda[i][1]
         video_class = rda[i][2]
         video_path = os.path.join(dataset_path, video_folder_name, str(video_id) + '.mp4')
         save_folder_path = os.path.join(dataset_path, save_folder_name)
-        frame_list = extract_frame(video_id, video_path, start_time, end_time, save_folder_path)
-        annotation[video_class].append(frame_list)
+        frame_list, fps = extract_frame(video_id, video_path, start_time, end_time, save_folder_path)
+        anno = {
+            'video_id': video_id,
+            'start_time': start_time,
+            'end_time': end_time,
+            'video_class': video_class,
+            'frame_list': frame_list,
+            'fps': fps
+        }
+        annotation.append(anno)
         write_annotation(os.path.join(dataset_path, video_annotation_name), annotation)
