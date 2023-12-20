@@ -1,9 +1,9 @@
-from model.my_transforms import *
-from model.model import *
+from my_transforms import *
+from model import *
 from pre_process.data import MLFPDataset
 from torch.utils.data import DataLoader
 from utils import *
-from model.trainer import train
+from trainer import train
 
 from torch import optim
 import torch.nn as nn
@@ -15,8 +15,8 @@ dataset_path = r'C:\Users\chant\OneDrive\Courses\WOA7015 Advanced Machine Learni
 video_annotation_name = r'video_annotation.json'
 save_folder_name = r'frames'
 
-batch_size = 4
-lr = 0.001
+batch_size = 16
+lr = 0.0001
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
@@ -28,9 +28,11 @@ if __name__ == '__main__':
     train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    model = model2().to(device)
+    model = model3().to(device)
+    n_params = count_parameters(model)
+    print(f'The model has {n_params} trainable parameters')
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    train(model, device, train_dataloader, test_dataloader, criterion, optimizer, 10, 10)
+    train(model, device, train_dataloader, test_dataloader, criterion, optimizer, 10, 3)

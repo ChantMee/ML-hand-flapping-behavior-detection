@@ -6,22 +6,23 @@ from tqdm import tqdm
 def train(model, device, train_loader, test_loader, criterion, optimizer, epoch, log_interval=10):
     model.train()
     matric = []
-    for batch_idx, (data, target) in tqdm(enumerate(train_loader)):
-        data, target = data.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.long)
-        optimizer.zero_grad()
-        output = model(data)
-        loss = F.cross_entropy(output, target)
-        loss.backward()
-        optimizer.step()
+    for e in tqdm(range(epoch)):
+        for batch_idx, (data, target) in tqdm(enumerate(train_loader)):
+            data, target = data.to(device=device, dtype=torch.float), target.to(device=device, dtype=torch.long)
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
 
-        if batch_idx % log_interval == 0:
-            line = 'Train Epoch: {} [{}/{} ({:.2f}%)]\tLoss: {:.6f}\tAccuracy: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item(),
-                get_accuracy(model, device, test_loader))
-            print(line)
-            matric.append(line)
-    return matric
+            if batch_idx % log_interval == 0:
+                line = 'Train Epoch: {} [{}/{} ({:.2f}%)]\tLoss: {:.6f}\tAccuracy: {:.6f}'.format(
+                    e, batch_idx * len(data), len(train_loader.dataset),
+                    100. * batch_idx / len(train_loader), loss.item(),
+                    get_accuracy(model, device, test_loader))
+                print(line)
+                matric.append(line)
+        return matric
 
 
 def get_accuracy(model, device, loader):
