@@ -44,6 +44,7 @@ class MLFPDataset(Dataset):
         # read frames
         frames = read_imgs(selected_frame, self.frame_dir)
         frames = [self.transform(frame) for frame in frames]
+        frames = torch.stack(frames)
         return frames, video_class
 
 
@@ -71,5 +72,5 @@ if __name__ == '__main__':
                           transform=transform,
                           )
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=0)
-    imgs, labels = dataset[0]
-    show_imgs(imgs)
+    imgs, labels = next(iter(dataloader))
+    print(imgs.shape, labels.shape)
