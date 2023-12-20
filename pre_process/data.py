@@ -3,10 +3,8 @@ import random
 import os
 
 import torchvision
-from PIL import Image
-import numpy as np
-import torch
 from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
 
 
 class MLFPDataset(Dataset):
@@ -29,7 +27,7 @@ class MLFPDataset(Dataset):
         start_time = self.annotation[idx]['start_time']
         end_time = self.annotation[idx]['end_time']
         video_class = self.annotation[idx]['video_class']
-        fps = self.annotation[idx]['fps']
+        fps = int(self.annotation[idx]['fps'])
         frame_list = self.annotation[idx]['frame_list']
 
         interval = self.duration * fps // self.num_frame
@@ -42,8 +40,10 @@ class MLFPDataset(Dataset):
         # randomly select consecutive self.num_frame frames
         start_frame_index = random.randint(0, len(frame_index) - self.num_frame)
         selected_frame_index = frame_index[start_frame_index: start_frame_index + self.num_frame]
+        selected_frame = [frame_list[i] for i in selected_frame_index]
         # read frames
-        frames = read_imgs(selected_frame_index, self.frame_dir)
+        frames = read_imgs(selected_frame, self.frame_dir)
+        frames = [self.transform(frame) for frame in frames]
         return frames, video_class
 
 
@@ -53,6 +53,23 @@ if __name__ == '__main__':
     video_duration_annotation_name = r'video_duration_annotation.csv'
     video_annotation_name = r'video_annotation.json'
     save_folder_name = r'frames'
+
+    # transform with resize, to_tensor, crop, rotate, normalize
+    transform = torchvision.transforms.Compose([
+        transforms.Resize((128, 171)),
+        transforms.RandomCrop((112, 112)),
+        transforms.RandomRotation(10),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+    ])
+
     dataset = MLFPDataset(os.path.join(dataset_path, video_annotation_name),
-                          os.path.join(dataset_path, save_folder_name), 2, 16)
+                          os.path.join(dataset_path, save_folder_name),
+                          duration=2,
+                          num_frame=16,
+                          transform=transform,
+                          )
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=0)
+    imgs, labels = dataset[0]
+    show_imgs(imgs)
