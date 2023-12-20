@@ -31,16 +31,21 @@ class MLFPDataset(Dataset):
         frame_list = self.annotation[idx]['frame_list']
 
         interval = self.duration * fps // self.num_frame
+
         # random select a start frame
         start_frame_index = random.randint(0, interval - 1)
+
         # get frame index
         frame_index = [i for i in range(start_frame_index, (end_time - start_time) * fps, interval)]
         if len(frame_index) < self.num_frame:
             frame_index += [frame_index[-1]] * (self.num_frame - len(frame_index))
+
         # randomly select consecutive self.num_frame frames
         start_frame_index = random.randint(0, len(frame_index) - self.num_frame)
         selected_frame_index = frame_index[start_frame_index: start_frame_index + self.num_frame]
         selected_frame = [frame_list[i] for i in selected_frame_index]
+        # print(start_frame_index, self.num_frame, len(frame_index), len(selected_frame_index))
+
         # read frames
         frames = read_imgs(selected_frame, self.frame_dir)
         frames = [self.transform(frame) for frame in frames]

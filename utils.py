@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import time
 
 import torch
 import numpy as np
@@ -82,3 +83,19 @@ def read_duration_annotation(video_duration_annotation_path):
             sm, ss, em, es = map(int, match.groups())
             df[i][1] = (sm * 60 + ss, em * 60 + es)
     return df
+
+
+def save_model(model, model_name):
+    torch.save(model.state_dict(), 'model_parameter/' + model_name + '.pth')
+
+
+def read_model(model, model_name):
+    model.load_state_dict(torch.load('model_parameter/' + model_name + '.pth'))
+
+
+def get_time_stamp():
+    return time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
