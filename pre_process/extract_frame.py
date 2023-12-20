@@ -1,3 +1,5 @@
+from utils import *
+
 import cv2
 import os
 import pandas as pd
@@ -40,44 +42,7 @@ def extract_frame(video_id, video_path, start_time, end_time, save_path):
     return frame_list, fps
 
 
-def read_duration_annotation(video_duration_annotation_path):
-    """
-    Read annotation file
-    :param video_duration_annotation_path: path to annotation file
-    :return: list of annotation
-    """
-    df = pd.read_csv(video_duration_annotation_path).values.tolist()
-    for i in range(len(df)):
-        match = re.match(r'(\d+):(\d+)-(\d+):(\d+)', df[i][1])
-        if match:
-            sm, ss, em, es = map(int, match.groups())
-            df[i][1] = (sm * 60 + ss, em * 60 + es)
-    return df
 
-
-def read_annotation(annotation_path):
-    """
-    Read annotation file
-    :param annotation_path: path to annotation file
-    :return: dict of annotation
-    """
-    if not os.path.exists(annotation_path):
-        return []
-    with open(annotation_path, 'r') as f:
-        annotation = json.load(f)
-        f.close()
-    return annotation
-
-def write_annotation(annotation_path, annotation):
-    """
-    Write annotation file
-    :param annotation_path: path to annotation file
-    :param annotation: dict of annotation
-    :return: None
-    """
-    with open(annotation_path, 'w') as f:
-        json.dump(annotation, f)
-        f.close()
 
 
 if __name__ == "__main__":
@@ -105,4 +70,4 @@ if __name__ == "__main__":
             'fps': fps
         }
         annotation.append(anno)
-        write_annotation(os.path.join(dataset_path, video_annotation_name), annotation)
+        save_annotation(os.path.join(dataset_path, video_annotation_name), annotation)

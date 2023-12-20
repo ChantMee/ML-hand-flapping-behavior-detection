@@ -1,5 +1,5 @@
+from utils import *
 import random
-import json
 import os
 
 import torchvision
@@ -9,25 +9,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 
-def read_annotation(annotation_path):
-    with open(annotation_path, 'r') as f:
-        annotation = json.load(f)
-    return annotation
-
-
-def read_frame(frame_index, frame_dir):
-    frames = []
-    for i in frame_index:
-        frame_path = f"{frame_dir}/{i}.jpg"
-        frames.append(Image.open(frame_path))
-    return frames
-
-
 class MLFPDataset(Dataset):
-    '''
+    """
     duration: how long (seconds) should one data be
     num_frame: how many frames should extract from one duration
-    '''
+    """
     def __init__(self, annotation_dir, frame_dir, duration, num_frame, transform=None):
         self.annotation = read_annotation(annotation_dir)
         self.frame_dir = frame_dir
@@ -57,7 +43,7 @@ class MLFPDataset(Dataset):
         start_frame_index = random.randint(0, len(frame_index) - self.num_frame)
         selected_frame_index = frame_index[start_frame_index: start_frame_index + self.num_frame]
         # read frames
-        frames = read_frame(selected_frame_index, self.frame_dir)
+        frames = read_imgs(selected_frame_index, self.frame_dir)
         return frames, video_class
 
 
@@ -67,5 +53,6 @@ if __name__ == '__main__':
     video_duration_annotation_name = r'video_duration_annotation.csv'
     video_annotation_name = r'video_annotation.json'
     save_folder_name = r'frames'
-    dataset = MLFPDataset(os.path.join(dataset_path, video_annotation_name), os.path.join(dataset_path, save_folder_name), 2, 16)
+    dataset = MLFPDataset(os.path.join(dataset_path, video_annotation_name),
+                          os.path.join(dataset_path, save_folder_name), 2, 16)
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=0)
