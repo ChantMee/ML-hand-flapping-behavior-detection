@@ -32,8 +32,8 @@ def extract_frame(video_id, video_path, start_time, end_time, save_path):
         if not ret:
             break
         cv2.imwrite(f"{save_path}/{video_id}_{current_frame}.jpg", frame)
-        current_frame += 1
         frame_list.append(f"{video_id}_{current_frame}.jpg")
+        current_frame += 1
 
     cap.release()
     return frame_list, fps
