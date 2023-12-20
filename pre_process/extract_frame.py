@@ -2,9 +2,6 @@ from utils import *
 
 import cv2
 import os
-import pandas as pd
-import re
-import json
 from tqdm import tqdm
 
 
