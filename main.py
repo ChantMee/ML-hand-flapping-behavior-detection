@@ -3,6 +3,7 @@ from model.model import MLFP
 from pre_process.data import MLFPDataset
 from torch.utils.data import DataLoader
 from utils import *
+from model.trainer import train
 
 from torch import optim
 import torch.nn as nn
@@ -24,25 +25,12 @@ if __name__ == '__main__':
                             duration=2,
                             num_frame=16,
                             transform=get_transform(0))
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    test_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     model = MLFP().to(device)
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    for epoch in tqdm(range(10)):
-        running_loss = 0.0
-        for i, data in enumerate(dataloader):
-            inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-            if i % 10 == 9:
-                print(f"[{epoch + 1}, {i + 1}] loss: {running_loss / 10}")
-                running_loss = 0.0
+    train(model, device, train_dataloader, test_dataloader, criterion, optimizer, 10, 10)
